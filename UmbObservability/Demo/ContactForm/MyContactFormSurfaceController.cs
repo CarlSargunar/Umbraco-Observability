@@ -31,6 +31,11 @@ public class MyContactFormSurfaceController : SurfaceController
 
     public async Task<IActionResult> Submit(MyContactFormViewModel model)
     {
+        using var activity = ContactActivitySource.ActivitySource.StartActivity("SubmitContactForm");
+        activity?.SetTag("controller", nameof(Submit));
+        activity?.SetTag("form.name", model.Name);
+        activity?.SetTag("form.email", model.Email);
+
         if (!ModelState.IsValid)
         {
             return CurrentUmbracoPage();

@@ -214,13 +214,44 @@ Traces are a way of tracking the flow of a request through a distributed system.
 
 In the same way as metrics, we can add the traces built into .NET to the Aspire Dashboard, and configure an exporter to send the data to the dashboard. We can then monitor request which pass through multiple controllers, services, and middleware, and see how long they take to process, where they go, and what happens to them. This can help us understand the performance of our system, track down bottlenecks, and even predict when something is going to go wrong.
 
-Eg - the following request was for a submission to the contact form, where we can see the request 
+Eg - the following request was for a submission to the contact form, where we can see the request went thrugh the SubmitContactForm Surface Controller, and the EmailService.SendEmail method, and we get additional information with how long each request took to process, and any exceptions that were thrown, and any additional information we added to the trace.
+
+![Trace](<images/Trace through services.jpg>)
+
+To add this custom trace, I created a Custom ActivitySource, which is a way of grouping related activities together. This is then used to create a custom Activity, which is used to track the flow of a request through the system. The Activity is then sent to the Aspire Dashboard, where you can see it in real-time.
 
 ```csharp
+public static class ContactActivitySource
+{
+    public static readonly ActivitySource ActivitySource = new ActivitySource("UmbObservability.ContactForm");
+}
+```
+
+I then added trace information to my controller and services as follows:
+
+```csharp
+// Add trace information to the controller  
+        using var activity = ContactActivitySource.ActivitySource.StartActivity("SubmitContactForm");
+        activity?.SetTag("controller", nameof(Submit));
+        activity?.SetTag("form.name", model.Name);
+        activity?.SetTag("form.email", model.Email);
+```
+
+And in the service:
+
+```csharp
+// Add trace information to the service
+        using var activity = ContactActivitySource.ActivitySource.StartActivity("SendEmail");
+        activity?.SetTag("service", nameof(SendEmail));
+        activity?.SetTag("email.to", model.Email);
+        activity?.SetTag("email.subject", model.Subject);
+```
+
+Obviously this is a simple example, you may should not put personal information in the trace, but you can see how to decorate your traces with additional information, and how to track the flow of a request through your system.
 
 ## Conclusion
 
-Observability is a powerful tool for understanding the behavior of your system in real-time. By adding metrics and traces to your logging, you can get a much better picture of what's going on in your system, and track down bugs and performance issues much more easily. The Aspire dashboard is a great way to get started with observability locally, and the same code will work with production telemetry products. This article hopefully gives you a taster of the sorts of things you can do with observability, and how you can use it to improve the performance and reliability of your Umbraco site.
+Observability is a powerful tool for understanding the behavior of your system in real-time. By adding metrics and traces to your logging, you can get a much better picture of what's going on in your system, and track down bugs and performance issues much more easily. The Aspire dashboard is a great way to get started with observability locally, and the same code will work with production if you configure the relevant exporters. This article only scratches the surface of what's possible, but hopefully gives you a taster of the sorts of things you can do with observability, and how you can use it to improve the performance and reliability of your Umbraco site.
 
 If you want to read further, I have some links in the references section below. Happy observing!
 

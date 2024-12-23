@@ -1,4 +1,5 @@
 ﻿using UmbObservability.Demo.ContactForm;
+using UmbObservability.Demo.OTel;
 
 namespace UmbObservability.Demo.Services;
 
@@ -20,6 +21,11 @@ public class EmailService : IEmailService
 
     public async Task<string> SendEmail(MyContactFormViewModel model)
     {
+        using var activity = ContactActivitySource.ActivitySource.StartActivity("SendEmail");
+        activity?.SetTag("service", nameof(SendEmail));
+        activity?.SetTag("email.to", model.Email);
+        activity?.SetTag("email.subject", model.Subject);
+
         try
         {
             var fromAddress = _globalSettings.Value?.Smtp?.From ?? "noreply@umbraco.com";

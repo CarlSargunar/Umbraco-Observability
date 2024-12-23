@@ -32,7 +32,8 @@ builder.Services.AddOpenTelemetry()
             // Configure tracing with the build in AspNetCore and HttpClient instrumentation
             tracing
                 .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation();
+                .AddHttpClientInstrumentation()
+                .AddSource("UmbObservability.ContactForm");
             tracing.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
 
         }
