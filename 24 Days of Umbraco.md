@@ -22,13 +22,13 @@ Where logging is concerned with the state of one part of the system at a point i
  
 Open Telemetry (OTel) is the protocol we will use collecting and sending telemetry data in a central location where we can interrogate it. It's open source (the OPEN in Open Telemetry) and is designed to be Vendor neutral, supporting a host of languages which can be found on the Open Telemetry website - crucially for us including .NET.
 
-What OTel does is gather signals from all parts of your distributed applications into a single collector, which can then be used with third party obervability backends - like Jaeger, Prometheus etc. The Telemetry part of the name comes from the Greek word "tele" meaning "remote" and "metron" meaning "measure" - accepting those signals into a single collector for analysis.
+What OTel does is gather signals from all parts of your distributed applications into a single collector, which can then be used with third party observability backends - like Jaeger, Prometheus etc. The Telemetry part of the name comes from the Greek word "tele" meaning "remote" and "metron" meaning "measure" - accepting those signals into a single collector for analysis.
 
 ![OTel Overview](<images/OTel Overview.jpg>)
 
 Communication between the application and the central location is done using the Open Telemetry Protocol (OTLP) which sends signals to a central listener, where they can be stored and analyzed. 
 
-In this demo, the .NET Aspire dashboard, which will be where the signals are sent to has a built-in OTLP server to demonstrate the concepts. However the Aspire Standalong dashboard is a development tool and doesn't support telemetry persistence. If you want to persist your telemetry data, you'll need to set up a third party service to do so.
+The .NET Aspire dashboard which processes these signals to has a built-in OTLP server to demonstrate the concepts. However the Aspire Standalong dashboard is a development tool and doesn't support telemetry persistence. If you want to persist your telemetry data, you'll need to set up a third party service to do so.
 
 ## So how does this all work?
 
