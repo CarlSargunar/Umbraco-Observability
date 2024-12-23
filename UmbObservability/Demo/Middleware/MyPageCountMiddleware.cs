@@ -20,7 +20,7 @@ public class MyPageCountMiddleware
         {
             _logger.LogInformation($"Request for {context.Request.Path} received");
             var urlName = context.Request.Path.Value.ToLowerInvariant();
-            DiagnosticsConfig.PageCounter.Add(1, new KeyValuePair<string, object>("page.url", urlName));
+            PageCountMetric.PageCounter.Add(1, new KeyValuePair<string, object>("page.url", urlName));
         }
 
         // Call the next middleware in the pipeline

@@ -2,7 +2,7 @@
 
 namespace UmbObservability.Demo.OTel;
 
-public static class DiagnosticsConfig
+public static class PageCountMetric
 {
     //Resource name for Aspire Dashboard
     public const string ServiceName = "UmbObservability.Counts";

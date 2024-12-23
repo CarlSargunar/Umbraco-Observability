@@ -19,26 +19,26 @@ builder.Services.AddOpenTelemetry()
         .AddService(serviceName))
     .WithMetrics(metrics =>
     {
+        // Configure metrics with the build in AspNetCore and HttpClient instrumentation
         metrics
             .AddHttpClientInstrumentation()
             .AddAspNetCoreInstrumentation()
             .AddRuntimeInstrumentation();
-        metrics.AddMeter(DiagnosticsConfig.Meter.Name);
+        // Also add a custom metric to track the number of page views
+        metrics.AddMeter(PageCountMetric.Meter.Name);
         metrics.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
     }).WithTracing(tracing =>
         {
-
+            // Configure tracing with the build in AspNetCore and HttpClient instrumentation
             tracing
                 .AddAspNetCoreInstrumentation()
-                .AddHttpClientInstrumentation()
-                .AddSource("ContactSource");
+                .AddHttpClientInstrumentation();
+            tracing.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
 
-            
-            tracing.AddOtlpExporter(opt=> opt.Endpoint = openTelemetryUri);
-            
         }
     );
 
+// Configure Logging to send signals to the Aspire Dashboard
 builder.Logging.AddOpenTelemetry(log =>
 {
     log.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);

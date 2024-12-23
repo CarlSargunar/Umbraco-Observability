@@ -20,13 +20,15 @@ Where logging is concerned with the state of one part of the system at a point i
 
 ## Open Telemetry
  
-Open Telemetry is the protocol we will use collecting and sending telemetry data in a central location where we can interrogate it. It's open source (the OPEN in Open Telemetry) and is designed to be Vendor neutral, supporting a host of languages which can be found on the Open Telemetry website - crucially for us including .NET.
+Open Telemetry (OTel) is the protocol we will use collecting and sending telemetry data in a central location where we can interrogate it. It's open source (the OPEN in Open Telemetry) and is designed to be Vendor neutral, supporting a host of languages which can be found on the Open Telemetry website - crucially for us including .NET.
 
-The Telemetry part of the name comes from the Greek word "tele" meaning "remote" and "metron" meaning "measure" - and as the name suggests, it's all about measuring your production environments remotely. There are many advantages to keeping your monitoring remote, not least of which is that you can monitor your production environment with only minimal impact, but also that you can monitor multiple parts of the application in a single location.
+What OTel does is gather signals from all parts of your distributed applications into a single collector, which can then be used with third party obervability backends - like Jaeger, Prometheus etc. The Telemetry part of the name comes from the Greek word "tele" meaning "remote" and "metron" meaning "measure" - accepting those signals into a single collector for analysis.
 
-Communication between the application and the central location is done using the Open Telemetry Protocol (OTLP) which sends signals to a central listener, where they can be stored and analyzed. Depending on the configuration, this could be a local server, a cloud service, or even a third-party service like ElasticSearch, Jaeger, or Prometheus. Microsoft also has an integration with Azure Monitor, which allows you to send telemetry data to Azure Monitor for analysis, please see references for links.
+![OTel Overview](<images/OTel Overview.jpg>)
 
-In this demo, the .NET Aspire dashboard has a built-in OTLP server, but doesn't support telemetry persistence, or have any plans to. If you want to persist your telemetry data, you'll need to set up a third party service to do so.
+Communication between the application and the central location is done using the Open Telemetry Protocol (OTLP) which sends signals to a central listener, where they can be stored and analyzed. 
+
+In this demo, the .NET Aspire dashboard, which will be where the signals are sent to has a built-in OTLP server to demonstrate the concepts. However the Aspire Standalong dashboard is a development tool and doesn't support telemetry persistence. If you want to persist your telemetry data, you'll need to set up a third party service to do so.
 
 ## So how does this all work?
 
@@ -74,30 +76,52 @@ dotnet add UmbObservability package OpenTelemetry.Instrumentation.Http
 dotnet add UmbObservability package OpenTelemetry.Instrumentation.Runtime
 
 ```
-You also need to add the following to your appsettings.json file at the root level:
+You also need to add the following to your appsettings.json file at the root level. This represents the GRPC port that the Aspire Dashboard is listening on, which you can see from Docker Desktop. We also have a friendly name for our service, which will be displayed in the Aspire Dashboard along with our Logs, Metrics and Traces.
 
 ```json
 {
-    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317" 
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    "OTEL_SERVICE_NAME": "UmbObservability"
 }
 ```
 
 Finally you need to modify the program.cs with the following to configure the export of signals to the .NET Aspire dashboard listener.
 
 ```csharp
-// Configure OTLP exporter
+// Configure Logging
 var openTelemetryUri = new Uri(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+var serviceName = builder.Configuration["OTEL_SERVICE_NAME"];
 
-// Configure OpenTelemetry
-builder.Logging.AddOpenTelemetry(opt =>
-{
-    opt.AddOtlpExporter(options =>
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(res => res
+        .AddService(serviceName))
+    .WithMetrics(metrics =>
     {
-        options.Endpoint = openTelemetryUri;
-    });
-    opt.SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("UmbObservability"));
-    opt.IncludeFormattedMessage = true;
-    opt.IncludeScopes = true;
+        // Configure metrics with the build in AspNetCore and HttpClient instrumentation
+        metrics
+            .AddHttpClientInstrumentation()
+            .AddAspNetCoreInstrumentation()
+            .AddRuntimeInstrumentation();
+        // Also add a custom metric to track the number of page views
+        metrics.AddMeter(DiagnosticsConfig.Meter.Name);
+        metrics.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
+    }).WithTracing(tracing =>
+        {
+            // Configure tracing with the build in AspNetCore and HttpClient instrumentation
+            tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation();
+            tracing.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
+
+        }
+    );
+
+// Configure Logging to send signals to the Aspire Dashboard
+builder.Logging.AddOpenTelemetry(log =>
+{
+    log.AddOtlpExporter(opt => opt.Endpoint = openTelemetryUri);
+    log.IncludeScopes = true;
+    log.IncludeFormattedMessage = true;
 });
 ```
 
@@ -186,9 +210,13 @@ This data is shown in real-time, and it takes a few seconds for it to update in 
 
 ## Traces
 
-Traces are a way of tracking the flow of a request through a distributed system. By adding a unique identifier to a request, you can track it through the system, and see how long it takes to process, where it goes, and what happens to it. This can help you understand the performance of your system, track down bottlenecks, and even predict when something is going to go wrong.
+Traces are a way of tracking the flow of a request through a distributed system. You can track a request through the system, and see how long it takes to process, where it goes, and what happens to it, and if you have a distributed system, by adding a unique identifier, you can track it between systems. This can help you understand the performance of your system, track down bottlenecks, and even predict when something is going to go wrong.
 
-To be completed!
+In the same way as metrics, we can add the traces built into .NET to the Aspire Dashboard, and configure an exporter to send the data to the dashboard. We can then monitor request which pass through multiple controllers, services, and middleware, and see how long they take to process, where they go, and what happens to them. This can help us understand the performance of our system, track down bottlenecks, and even predict when something is going to go wrong.
+
+Eg - the following request was for a submission to the contact form, where we can see the request 
+
+```csharp
 
 ## Conclusion
 
@@ -215,11 +243,3 @@ If you want to read further, I have some links in the references section below. 
     - https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-with-otel
     - https://opentelemetry.io/docs/languages/net/getting-started/
 
-
-
-
-
-## Notes
-
-- middleware to generate exceptions on a specific URL, so we can see exceptions in the dashboard
-- https://github.com/umbraco/The-Starter-Kit/blob/v11/dev/src/Umbraco.SampleSite/Controllers/ContactFormController.cs

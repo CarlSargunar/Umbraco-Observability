@@ -1,4 +1,5 @@
 using UmbObservability.Demo.OTel;
+using UmbObservability.Demo.Services;
 
 namespace UmbObservability.Demo.ContactForm;
 
@@ -7,6 +8,7 @@ public class MyContactFormSurfaceController : SurfaceController
     private readonly IEmailSender _emailSender;
     private readonly IOptions<GlobalSettings> _globalSettings;
     private readonly ILogger<MyContactFormSurfaceController> _logger;
+    private readonly IEmailService _emailService;
 
     public MyContactFormSurfaceController(
         IUmbracoContextAccessor umbracoContextAccessor,
@@ -16,12 +18,15 @@ public class MyContactFormSurfaceController : SurfaceController
         IProfilingLogger profilingLogger,
         IPublishedUrlProvider publishedUrlProvider,
         IEmailSender emailSender,
-        IOptions<GlobalSettings> globalSettings, ILogger<MyContactFormSurfaceController> logger)
+        IOptions<GlobalSettings> globalSettings, 
+        ILogger<MyContactFormSurfaceController> logger,
+        IEmailService emailService)
         : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
     {
         _emailSender = emailSender;
         _globalSettings = globalSettings;
         _logger = logger;
+        _emailService = emailService;
     }
 
     public async Task<IActionResult> Submit(MyContactFormViewModel model)
@@ -31,24 +36,8 @@ public class MyContactFormSurfaceController : SurfaceController
             return CurrentUmbracoPage();
         }
 
-        TempData["Message"] = await HandleSuccessfulSubmitAsync(model);
+        TempData["Message"] = await _emailService.SendEmail(model);
 
         return RedirectToCurrentUmbracoPage();
-    }
-
-    protected virtual async Task<string> HandleSuccessfulSubmitAsync(MyContactFormViewModel model)
-    {
-        try
-        {
-            EmailMessage mailMessage = new(_globalSettings.Value?.Smtp?.From ?? "noreply@umbraco.com", model.Email, model.Subject ?? $"Website Contact form: {model.Name}", model.Message, true);
-            await _emailSender.SendAsync(mailMessage, "StarterKitContactEmail", true);
-
-            return "Message submitted";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while submitting the form");
-            return "An error occurred while submitting the form";
-        }
     }
 }
