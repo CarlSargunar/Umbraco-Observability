@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UmbObservability", "UmbObse
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyWeatherAPI", "MyWeatherAPI\MyWeatherAPI.csproj", "{FBF73998-E225-4C13-81DE-3DD0E361A5E0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppHost", "AppHost\AppHost.csproj", "{1987FFC3-8BFA-4D59-88F6-5302EAF285D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDefaults", "ServiceDefaults\ServiceDefaults.csproj", "{B3289DAB-13CD-4B4A-858D-FB0EC57B80BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{FBF73998-E225-4C13-81DE-3DD0E361A5E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBF73998-E225-4C13-81DE-3DD0E361A5E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBF73998-E225-4C13-81DE-3DD0E361A5E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1987FFC3-8BFA-4D59-88F6-5302EAF285D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1987FFC3-8BFA-4D59-88F6-5302EAF285D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1987FFC3-8BFA-4D59-88F6-5302EAF285D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1987FFC3-8BFA-4D59-88F6-5302EAF285D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3289DAB-13CD-4B4A-858D-FB0EC57B80BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3289DAB-13CD-4B4A-858D-FB0EC57B80BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3289DAB-13CD-4B4A-858D-FB0EC57B80BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3289DAB-13CD-4B4A-858D-FB0EC57B80BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

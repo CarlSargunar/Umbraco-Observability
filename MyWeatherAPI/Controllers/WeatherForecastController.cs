@@ -13,12 +13,12 @@ namespace MyWeatherAPI.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly ITemperatureService _temperatureService;
+        private readonly IWeatherService _weatherService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, ITemperatureService temperatureService)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWeatherService weatherService)
         {
             _logger = logger;
-            _temperatureService = temperatureService;
+            _weatherService = weatherService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
@@ -42,8 +42,8 @@ namespace MyWeatherAPI.Controllers
             _logger.LogInformation("Generated {0} weather reports. {1} hot days, {2} cold days.", forecasts.Length, hotDays, coldDays);
 
             // Calling another service
-            _temperatureService.ReactToTemperature(maxTemp);
-            _temperatureService.ReactToTrend(hotDays, coldDays);
+            _weatherService.ReactToTemperature(maxTemp);
+            _weatherService.ReactToTrend(hotDays, coldDays);
 
             //// Record Metrics
             //WeatherMetrics.Count.Add(1);

@@ -1,10 +1,10 @@
 ﻿namespace MyWeatherAPI.Services
 {
-    public class TemperatureService : ITemperatureService
+    public class WeatherService : IWeatherService
     {
-        private readonly ILogger<TemperatureService> _logger;
+        private readonly ILogger<WeatherService> _logger;
 
-        public TemperatureService(ILogger<TemperatureService> logger)
+        public WeatherService(ILogger<WeatherService> logger)
         {
             _logger = logger;
         }
@@ -29,11 +29,5 @@
                 _logger.LogWarning("Heatwave!!! Things are slowing down: {0}", heatwaveDays);
             }
         }
-    }
-
-    public interface ITemperatureService
-    {
-        void ReactToTemperature(int maxTemp);
-        void ReactToTrend(int hotDays, int coldDays);
     }
 }
