@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MyWeatherAPI.Services;
 
 namespace MyWeatherAPI.Controllers
 {
@@ -8,26 +9,49 @@ namespace MyWeatherAPI.Controllers
     {
         private static readonly string[] Summaries = new[]
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+            "Wet", "Rainy", "Drizzly", "Mizzly", "Cats and Dogs", "Spitting", "Bucketing down", "Pissing", "Smirr", "Plothering"
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ITemperatureService _temperatureService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, ITemperatureService temperatureService)
         {
             _logger = logger;
+            _temperatureService = temperatureService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            var range = Random.Shared.Next(5, 30);
+            var forecasts = Enumerable.Range(1, range).Select(index => new WeatherForecast
+                (
+                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                    Random.Shared.Next(-5, 30),
+                    Summaries[Random.Shared.Next(Summaries.Length)]
+                ))
+                .ToArray();
+
+            var hotDays = forecasts.Count(x => x.TemperatureC > 20);
+            var coldDays = forecasts.Count(x => x.TemperatureC < 5);
+            var maxTemp = forecasts.Max(x => x.TemperatureC);
+            var minTemp = forecasts.Min(x => x.TemperatureC);
+
+            // Some logging
+            _logger.LogInformation("Generated {0} weather reports. {1} hot days, {2} cold days.", forecasts.Length, hotDays, coldDays);
+
+            // Calling another service
+            _temperatureService.ReactToTemperature(maxTemp);
+            _temperatureService.ReactToTrend(hotDays, coldDays);
+
+            //// Record Metrics
+            //WeatherMetrics.Count.Add(1);
+            //WeatherMetrics.MaxTemp.Record(maxTemp);
+            //WeatherMetrics.MinTemp.Record(minTemp);
+
+
+            return forecasts;
         }
     }
 }

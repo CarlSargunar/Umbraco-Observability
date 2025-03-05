@@ -132,3 +132,4 @@ This project uses a local SQLite database, and you can run the site by visiting 
 - .NET Observability with Open Telemetry - https://learn.microsoft.com/en-us/dotnet/core/diagnostics/observability-with-otel
 - Open Telemetry Protocol - https://opentelemetry.io/docs/specs/otlp/
     - https://github.com/dotnet/aspire-samples/tree/main/samples/StandaloneDashboard
+- Application Insights - https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview
